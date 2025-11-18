@@ -24,7 +24,7 @@ services:
       MYSQL_USER: svc-kikerdezo
       MYSQL_PASSWORD: 1DwQZx_ionUM([/*
     volumes:
-      - mysql-data:/var/lib/mysql  # Persists MySQL data in a named volume
+      - ./sql/kikerdezo_01.sql:/docker-entrypoint-initdb.d/init.sql  # Persists MySQL data in a named volume
     networks:
       - app-network
   
@@ -32,7 +32,7 @@ services:
     image: phpmyadmin
     ports:
       - "8888:80"
-    restart: always
+    #restart: always
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
