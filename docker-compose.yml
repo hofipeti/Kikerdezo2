@@ -24,7 +24,7 @@ services:
       MYSQL_USER: svc-kikerdezo
       MYSQL_PASSWORD: 1DwQZx_ionUM([/*
     volumes:
-      - ./sql/kikerdezo_01.sql:/docker-entrypoint-initdb.d/init.sql  # Persists MySQL data in a named volume
+      - ./sql/kikerdezo_last.sql:/docker-entrypoint-initdb.d/init.sql  # Persists MySQL data in a named volume
     networks:
       - app-network
   

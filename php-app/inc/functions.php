@@ -30,12 +30,37 @@ function hasSzotar($userId, $szotarNev) {
 
 }
 
-function createSzotar($userId, $szotarNev) {
+function createSzotar($userId, $szotarNev, $nyelvId1, $nyelvId2) {
     global $conn;
-    $stmt = $conn->prepare("INSERT INTO szotar (user_fk, megnevezes) VALUES (?, ?)");
-    $stmt->bind_param("is", $userId, $szotarNev);
+    $stmt = $conn->prepare("INSERT INTO szotar (user_fk, megnevezes, nyelv1_fk, nyelv2_fk) VALUES (?, ?, ?, ? )");
+    $stmt->bind_param("isii", $userId, $szotarNev, $nyelvId1, $nyelvId2);
     
     return $stmt->execute();
 }
 
+function getSzotarByUser($userId) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT * FROM szotar WHERE user_fk = ? ORDER BY created_at DESC");
+    $stmt->bind_param("i", $userId);
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $szotarok = [];
+    while ($row = $result->fetch_assoc()) {
+        $szotarok[] = $row;
+    }
+    return $szotarok;
+}
 
+function getNyelvek() {
+    global $conn;
+    $stmt = $conn->prepare("SELECT * FROM nyelv ORDER BY megnevezes ASC");
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $nyelvek = [];
+    while ($row = $result->fetch_assoc()) {
+        $nyelvek[] = $row;
+    }
+    return $nyelvek;
+}

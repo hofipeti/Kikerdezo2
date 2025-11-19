@@ -9,13 +9,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['nev']) && !empty(trim($_POST['nev']))) {
         $nev = trim($_POST['nev']);
 
-        if (hasSzotar($_SESSION['user']->UserId, $nev)) {
+        // Nyelv ellenőrzés: legyenek meglévők és különbözők
+        $nyelv1 = isset($_POST['nyelv1']) ? trim($_POST['nyelv1']) : '';
+        $nyelv2 = isset($_POST['nyelv2']) ? trim($_POST['nyelv2']) : '';
+        if ($nyelv1 === '' || $nyelv2 === '') {
+            $_SESSION['error'] = "Mindkét nyelvet ki kell választani.";
+            header("Location: uj_szotar.html");
+            exit;
+        }
+        if ($nyelv1 === $nyelv2) {
+            $_SESSION['error'] = "A két kiválasztott nyelv nem lehet ugyanaz.";
+            header("Location: uj_szotar.html");
+            exit;
+        }
+
+        if (hasSzotar($_SESSION['user']->UserId, $nev   )) {
             $_SESSION['error'] = "A szótár már létezik.";
             header("Location: uj_szotar.html");
             exit;
         }
 
-        createSzotar($_SESSION['user']->UserId, $nev);
+        createSzotar($_SESSION['user']->UserId, $nev, $nyelv1, $nyelv2);
         $_SESSION['info'] = "A szótár sikeresen létrehozva: " . htmlspecialchars($nev, ENT_QUOTES, 'UTF-8');
         header("Location: index.php");
     } else {
