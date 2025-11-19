@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/inc/bootstrap.php';
 session_start();
 include_once 'inc/config.php'; // mysqli kapcsolat
 include_once 'inc/functions.php'; // segédfüggvények
