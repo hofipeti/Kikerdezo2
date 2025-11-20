@@ -64,3 +64,83 @@ function getNyelvek() {
     }
     return $nyelvek;
 }
+
+function getSzotarById($szotarId) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT s.szotar_id, s.megnevezes, n1.nyelv_id nyelv1_id, n1.megnevezes nyelv1, n2.nyelv_id nyelv2_id, n2.megnevezes nyelv2 FROM `szotar` s JOIN nyelv n1 ON s.nyelv1_fk = n1.nyelv_id JOIN nyelv n2 ON s.nyelv2_fk = n2.nyelv_id WHERE s.szotar_id = ?");
+    $stmt->bind_param("i", $szotarId);
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        return $row;
+    }
+    return null;
+}
+
+function getSzavakBySzotar($szotarId) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT s1.szo szo1, s2.szo szo2 FROM `szotar` s JOIN szotar_szo ss ON s.szotar_id = ss.szotar_fk JOIN szo s1 ON s1.szo_id = ss.szo_fk AND s1.nyelv_fk = s.nyelv1_fk JOIN szo s2 ON s2.szo_id = ss.szo_fk AND s2.nyelv_fk = s.nyelv2_fk WHERE s.szotar_id = ? ORDER BY ss.created_at DESC");
+    $stmt->bind_param("i", $szotarId);
+    
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $szavak = [];
+    while ($row = $result->fetch_assoc()) {
+        $szavak[] = $row;
+    }
+    return $szavak;
+}
+
+function createSzavak ($szotarId, $szo1, $szo2) {
+    global $conn;
+    $uuid = generate_uuid_v4();
+    $bin = uuid_to_bin($uuid);
+
+$stmt = $conn->prepare("INSERT INTO szo (szo_id, nyelv_fk, szo) (SELECT ?, s.nyelv1_fk, ?  FROM szotar s  WHERE s.szotar_id = ?)");
+$stmt->bind_param("ssi", $bin, $szo1, $szotarId);
+$stmt->execute();
+
+$stmt = $conn->prepare("INSERT INTO szo (szo_id, nyelv_fk, szo) (SELECT ?, s.nyelv2_fk, ?  FROM szotar s  WHERE s.szotar_id = ?)");
+$stmt->bind_param("ssi", $bin, $szo2, $szotarId);
+$stmt->execute();
+
+$stmt = $conn->prepare("INSERT INTO szotar_szo (szo_fk, szotar_fk) VALUES (?, ?)");
+$stmt->bind_param("si", $bin, $szotarId);
+$stmt->execute();
+
+
+}
+
+/**
+ * Generate a UUID v4 string (random-based)
+ * @return string UUID like 3f9f7c2a-1e4a-4f8a-9c2d-0a1b2c3d4e5f
+ */
+function generate_uuid_v4(): string {
+    $data = random_bytes(16);
+    // set version to 0100
+    $data[6] = chr((ord($data[6]) & 0x0f) | 0x40);
+    // set bits 6-7 to 10
+    $data[8] = chr((ord($data[8]) & 0x3f) | 0x80);
+    return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+
+/**
+ * Convert UUID string to 16-byte binary for storing in BINARY(16)
+ * @param string $uuid
+ * @return string binary(16)
+ */
+function uuid_to_bin(string $uuid): string {
+    $hex = str_replace('-', '', $uuid);
+    return hex2bin($hex);
+}
+
+/**
+ * Convert 16-byte binary to UUID string
+ * @param string $bin
+ * @return string
+ */
+function bin_to_uuid(string $bin): string {
+    $hex = bin2hex($bin);
+    return sprintf('%s-%s-%s-%s-%s', substr($hex,0,8), substr($hex,8,4), substr($hex,12,4), substr($hex,16,4), substr($hex,20));
+}
