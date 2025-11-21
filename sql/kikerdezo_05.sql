@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: mysql:3306
--- Létrehozás ideje: 2025. Nov 20. 20:21
+-- Létrehozás ideje: 2025. Nov 20. 11:07
 -- Kiszolgáló verziója: 8.0.44
 -- PHP verzió: 8.3.27
 
@@ -30,10 +30,8 @@ SET time_zone = "+00:00";
 CREATE TABLE `feladat` (
   `feladat_id` int NOT NULL,
   `user_fk` int NOT NULL,
-  `feladat_tipus_fk` int NOT NULL,
   `start_at` datetime DEFAULT CURRENT_TIMESTAMP,
-  `end_at` datetime DEFAULT NULL,
-  `ismetles` int DEFAULT NULL
+  `end_at` datetime NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -66,11 +64,10 @@ CREATE TABLE `kerdes` (
   `kerdes_id` int NOT NULL,
   `feladat_fk` int NOT NULL,
   `szo_fk` binary(16) NOT NULL,
-  `valasz` text CHARACTER SET utf8mb3 COLLATE utf8mb3_hungarian_ci,
-  `start_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `end_at` datetime ,
-  `helyes` bit(1) NOT NULL DEFAULT b'0',
-  `nyelv_fk` int NOT NULL
+  `valasz` text CHARACTER SET utf8mb3 COLLATE utf8mb3_hungarian_ci NOT NULL,
+  `start_at` datetime NOT NULL,
+  `end_at` datetime NOT NULL,
+  `helyes` bit(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -110,8 +107,6 @@ CREATE TABLE `szo` (
 --
 
 INSERT INTO `szo` (`szo_id`, `szo`, `nyelv_fk`) VALUES
-(0x4c057a34327e483d857a5bf964c03e11, 'kutya', 1),
-(0x4c057a34327e483d857a5bf964c03e11, 'dog', 2),
 (0x781e6bc6c2d011f0a9d24ee63b3592fe, 'autó', 1),
 (0x781e6bc6c2d011f0a9d24ee63b3592fe, 'car', 2),
 (0xb3964fe31ae14bd1991b9d36b9bd5657, 'key', 1),
@@ -131,9 +126,7 @@ CREATE TABLE `szolista` (
   `szolista_fk` int NOT NULL,
   `feladat_fk` int NOT NULL,
   `szo_fk` binary(16) NOT NULL,
-  `nyelv_fk` int NOT NULL,
-  `sikeres` int NOT NULL DEFAULT '0',
-  `probalkozas` int NOT NULL DEFAULT '0'
+  `nyelv` varchar(2) CHARACTER SET utf8mb3 COLLATE utf8mb3_hungarian_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_hungarian_ci;
 
 -- --------------------------------------------------------
@@ -156,8 +149,7 @@ CREATE TABLE `szotar` (
 --
 
 INSERT INTO `szotar` (`szotar_id`, `user_fk`, `nyelv1_fk`, `nyelv2_fk`, `megnevezes`, `created_at`) VALUES
-(5, 1, 1, 2, 'Új szótár', '2025-11-20 14:46:16')
-
+(4, 1, 1, 2, 'Mai', '2025-11-19 22:26:07');
 
 -- --------------------------------------------------------
 
@@ -177,12 +169,11 @@ CREATE TABLE `szotar_szo` (
 --
 
 INSERT INTO `szotar_szo` (`szotar_szo_id`, `szotar_fk`, `szo_fk`, `created_at`) VALUES
-(1, 5, 0x781e6bc6c2d011f0a9d24ee63b3592fe, '2025-11-19 22:41:32'),
-(2, 5, 0x3c54666daf2b49c2a1182a791c684a34, '2025-11-19 23:11:34'),
-(3, 5, 0xb3964fe31ae14bd1991b9d36b9bd5657, '2025-11-19 23:11:59'),
-(4, 5, 0xfa7ae5ed76a346c5b6cfb99a77d9dc2d, '2025-11-19 23:13:04'),
-(5, 5, 0xe477a4fa9dd74505939c3e0b6082ebd4, '2025-11-19 23:23:51'),
-(7, 5, 0x4c057a34327e483d857a5bf964c03e11, '2025-11-20 15:22:52');
+(1, 1, 0x781e6bc6c2d011f0a9d24ee63b3592fe, '2025-11-19 22:41:32'),
+(2, 4, 0x3c54666daf2b49c2a1182a791c684a34, '2025-11-19 23:11:34'),
+(3, 4, 0xb3964fe31ae14bd1991b9d36b9bd5657, '2025-11-19 23:11:59'),
+(4, 4, 0xfa7ae5ed76a346c5b6cfb99a77d9dc2d, '2025-11-19 23:13:04'),
+(5, 4, 0xe477a4fa9dd74505939c3e0b6082ebd4, '2025-11-19 23:23:51');
 
 -- --------------------------------------------------------
 
@@ -240,7 +231,7 @@ ALTER TABLE `szo`
 --
 ALTER TABLE `szolista`
   ADD PRIMARY KEY (`szolista_fk`),
-  ADD UNIQUE KEY `idx_szolista_szo_nyelv` (`szolista_fk`,`szo_fk`,`nyelv_fk`),
+  ADD UNIQUE KEY `idx_szolista_szo_nyelv` (`szolista_fk`,`szo_fk`,`nyelv`),
   ADD KEY `idf_szolita_feladat` (`feladat_fk`) USING BTREE;
 
 --
@@ -296,13 +287,13 @@ ALTER TABLE `szolista`
 -- AUTO_INCREMENT a táblához `szotar`
 --
 ALTER TABLE `szotar`
-  MODIFY `szotar_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `szotar_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT a táblához `szotar_szo`
 --
 ALTER TABLE `szotar_szo`
-  MODIFY `szotar_szo_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `szotar_szo_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT a táblához `user`

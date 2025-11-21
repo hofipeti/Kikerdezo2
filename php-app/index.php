@@ -18,6 +18,9 @@ if (!isset($_SESSION['user'])) {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="container mt-5">
+
+
+
   <h3>Üdvözöllek, <?php echo htmlspecialchars($_SESSION['user']->Nev ?? 'ismeretlen', ENT_QUOTES, 'UTF-8'); ?>!</h3>
 <?php if (isset($_SESSION['info'])): ?>
             <div class="info alert-info" role="info">
@@ -46,12 +49,52 @@ if (!isset($_SESSION['user'])) {
             </div>
             <div class="btn-group" role="group" aria-label="Actions">
               <a href="szavak_szerkesztese.php?szotar_id=<?php echo (int)$szotar['szotar_id']; ?>" class="btn btn-sm btn-outline-primary">Szavak szerkesztése</a>
-              <a href="kikerdezes_inditas.php?szotar_id=<?php echo (int)$szotar['szotar_id']; ?>" class="btn btn-sm btn-outline-primary">Indítás <span class="ms-2">&rarr;</span></a>
+              <a   href="kikerdezes_inditas.php?szotar_id=<?php echo (int)$szotar['szotar_id']; ?>" class="btn btn-sm btn-outline-primary fall-button">Indítás <span class="ms-2">&rarr;</span></a>
             </div>
           </div>
         <?php endforeach; ?>
       </div>
     <?php endif; ?>
     </div>
+
+ <style>
+    .fall-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: transform 1s ease-in, opacity 1s ease-in;
+      position: relative;
+    }
+
+    .fall-button.falling {
+      transform: translateY(200vh) rotate(720deg);
+      opacity: 0;
+    }
+  </style>
+       <script>
+    const buttons = document.querySelectorAll('.fall-button');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault(); // ne ugorjon azonnal a linkre
+
+        // animáció indítása
+        button.classList.add('falling');
+
+        // szülő <a> href attribútumának lekérése
+        const parentLink = button.getAttribute('href');
+
+        // várunk az animáció végéig, majd átirányítunk
+        setTimeout(() => {
+          window.location.href = parentLink;
+        }, 1200);
+      });
+    });
+  </script>
 </body>
 </html>

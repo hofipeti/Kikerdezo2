@@ -16,8 +16,10 @@ if (!$szotar_id) {
     // Próbáld meg a megfelelő fájlokat betölteni — módosítsd az útvonalat, ha máshol vannak.
     $inc1 = __DIR__ . '/inc/config.php';
     $inc2 = __DIR__ . '/inc/functions.php';
-    if (file_exists($inc1)) include_once $inc1;
-    if (file_exists($inc2)) include_once $inc2;
+    if (file_exists($inc1))
+        include_once $inc1;
+    if (file_exists($inc2))
+        include_once $inc2;
 
     $szotar = getSzotarByID($szotar_id);
 }
@@ -28,49 +30,84 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
 
     if (!isset($szo1_val) || !isset($szo2_val)) {
         $_SESSION['error'] = 'Mindkét szó megadása kötelező.';
-        header('Location: szavak_szerkesztese.php?szotar_id=' . (int)$szotar_id);
+        header('Location: szavak_szerkesztese.php?szotar_id=' . (int) $szotar_id);
         exit;
     } else
-    if ($szo1_val !== '' && $szo2_val !== '') {
-        $res = createSzavak($szotar_id, $szo1_val, $szo2_val);
-        if ($res === false) {
-            // createSzavak sets $_SESSION['error'] on failure
+        if ($szo1_val !== '' && $szo2_val !== '') {
+            $res = createSzavak($szotar_id, $szo1_val, $szo2_val);
+            if ($res === false) {
+                // createSzavak sets $_SESSION['error'] on failure
+            } else {
+                $_SESSION['info'] = 'Szavak sikeresen mentve.';
+                header('Location: szavak_szerkesztese.php?szotar_id=' . (int) $szotar_id);
+                exit;
+            }
         } else {
-            $_SESSION['info'] = 'Szavak sikeresen mentve.';
-            header('Location: szavak_szerkesztese.php?szotar_id=' . (int)$szotar_id);
-            exit;
+            $_SESSION['error'] = 'Mindkét szó megadása kötelező.';
         }
-    } else {
-        $_SESSION['error'] = 'Mindkét szó megadása kötelező.';
-    }
 }
 
 ?>
 <!doctype html>
 <html lang="hu">
+
 <head>
     <meta charset="utf-8">
     <title>Szavak szerkesztése</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <style>
         /* Egyszerű sorba rendezés: két mező egymás mellett */
-        .row { display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; }
-        .col { display:flex; flex-direction:column; }
-        .input-with-btn { display:flex; gap:8px; align-items:center; }
-        label { margin-bottom:6px; font-weight:600; }
-        input[type="text"] { padding:8px; min-width:220px; }
-        button { padding:8px 12px; }
-        .error { background:#ffe6e6; color:#900; padding:10px; border:1px solid #f2c2c2; margin-bottom:12px; }
+        .row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-with-btn {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        label {
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            min-width: 220px;
+        }
+
+        button {
+            padding: 8px 12px;
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #900;
+            padding: 10px;
+            border: 1px solid #f2c2c2;
+            margin-bottom: 12px;
+        }
     </style>
 </head>
+
 <body>
     <main>
         <?php if ($error): ?>
             <div class="error"><?php echo htmlspecialchars($error); ?></div>
         <?php endif; ?>
-              <?php if (isset($_SESSION['error'])): ?>
+        <?php if (isset($_SESSION['error'])): ?>
             <div class="alert alert-danger" role="alert">
-                <?php echo htmlspecialchars($_SESSION['error'], ENT_QUOTES, 'UTF-8'); unset($_SESSION['error']); ?>
+                <?php echo htmlspecialchars($_SESSION['error'], ENT_QUOTES, 'UTF-8');
+                unset($_SESSION['error']); ?>
             </div>
         <?php endif; ?>
         <h1>
@@ -90,17 +127,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
         </h1>
 
         <!-- Két egymás melletti egysoros mező, felettük címke, mellettük gomb -->
-        <form method="post" action="szavak_szerkesztese.php?szotar_id=<?php echo (int)$szotar_id; ?>">
+        <form method="post" action="szavak_szerkesztese.php?szotar_id=<?php echo (int) $szotar_id; ?>">
             <div class="row">
                 <div class="col">
-                    <label for="szo1"><?php echo htmlspecialchars($szotar['nyelv1'] ?? 'Nyelv 1', ENT_QUOTES, 'UTF-8'); ?></label>
+                    <label
+                        for="szo1"><?php echo htmlspecialchars($szotar['nyelv1'] ?? 'Nyelv 1', ENT_QUOTES, 'UTF-8'); ?></label>
                     <div class="input-with-btn">
                         <input type="text" id="szo1" name="szo1" class="form-control" value="">
                     </div>
                 </div>
 
                 <div class="col">
-                    <label for="szo2"><?php echo htmlspecialchars($szotar['nyelv2'] ?? 'Nyelv 2', ENT_QUOTES, 'UTF-8'); ?></label>
+                    <label
+                        for="szo2"><?php echo htmlspecialchars($szotar['nyelv2'] ?? 'Nyelv 2', ENT_QUOTES, 'UTF-8'); ?></label>
                     <div class="input-with-btn">
                         <input type="text" id="szo2" name="szo2" class="form-control" value="">
                         <button type="submit" class="btn btn-primary">Mentés</button>
@@ -108,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
                 </div>
             </div>
         </form>
-        
+
         <?php
         // Fetch words for this szotar and display them in a two-column table
         $szavak = [];
@@ -140,17 +179,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
                                 // take first two string-like values
                                 $vals = [];
                                 foreach ($row as $v) {
-                                    if (is_string($v) && trim($v) !== '') $vals[] = $v;
-                                    if (count($vals) >= 2) break;
+                                    if (is_string($v) && trim($v) !== '')
+                                        $vals[] = $v;
+                                    if (count($vals) >= 2)
+                                        break;
                                 }
                                 $left = $vals[0] ?? '';
                                 $right = $vals[1] ?? '';
                             }
-                        ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($left ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?php echo htmlspecialchars($right ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                        </tr>
+                            ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($left ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td><?php echo htmlspecialchars($right ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                            </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -170,4 +211,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
         }
     </script>
 </body>
+
 </html>
