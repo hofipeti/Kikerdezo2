@@ -55,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
     <meta charset="utf-8">
     <title>Szavak szerkesztése</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         /* Egyszerű sorba rendezés: két mező egymás mellett */
         .row {
@@ -125,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
             }
             ?>
         </h1>
-
+            <a href="index.php" class="btn btn-secondary mb-3">&larr; Vissza a főoldalra</a>
         <!-- Két egymás melletti egysoros mező, felettük címke, mellettük gomb -->
         <form method="post" action="szavak_szerkesztese.php?szotar_id=<?php echo (int) $szotar_id; ?>">
             <div class="row">

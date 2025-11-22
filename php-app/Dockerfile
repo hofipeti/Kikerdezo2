@@ -9,7 +9,7 @@ RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
 # Set the working directory
 WORKDIR /var/www/html
 RUN echo "DirectoryIndex index.html index.php" > /etc/apache2/conf-enabled/directoryindex.conf
-RUN echo "AddType application/x-httpd-php .html" >> /etc/apache2/apache2.conf
+#RUN echo "AddType application/x-httpd-php .html" >> /etc/apache2/apache2.conf
 # Copy the application code
 #COPY index.php .
 

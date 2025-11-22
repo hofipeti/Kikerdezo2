@@ -20,12 +20,15 @@ switch ($_SESSION["state"]) {
     case "kerdezes":
         $k = getKerdes($userId);
         if (empty($k)) {
-            createKerdes($userId);
-            
+            $vanMegKerdes = createKerdes($userId);
+            if (!$vanMegKerdes) {
+                header("Location: eredmeny.php?showlast=true");
+                exit;
+            }
         }
-        $kerdes =  empty($k) ? getKerdes($userId)["szo"] : $k["szo"];
+        $kerdes = empty($k) ? getKerdes($userId)["szo"] : $k["szo"];
         $_SESSION["state"] = "valasz";
-     
+
         unset($_SESSION["valasz"]);
         break;
     case "valasz":
@@ -57,7 +60,7 @@ switch ($_SESSION["state"]) {
                 exit;
             }
         } else {
-            
+
             $_SESSION['state'] = "kerdezes";
             header("Location: feladat.php");
             exit;
@@ -110,6 +113,21 @@ switch ($_SESSION["state"]) {
         .form-control {
             text-align: center;
         }
+
+        .moving {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            font-size: 180px;
+            /* ikon esetén */
+            line-height: 1;
+        }
+
+        .moving img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
     </style>
 </head>
 
@@ -121,7 +139,7 @@ switch ($_SESSION["state"]) {
                 echo $helyes === 1 ? 'helyes' : 'helytelen';
             } ?>">
                 <h1 class="h4 mb-4 text-center">Feladat megoldás</h1>
-<?php echo $_SESSION["state"]; ?>
+                <?php echo $_SESSION["state"]; ?>
                 <form class="needs-validation mt-2" method="POST" action="feladat.php" novalidate>
                     <!-- Readonly mező -->
                     <div class="mb-3">
@@ -133,19 +151,26 @@ switch ($_SESSION["state"]) {
                     <!-- Kötelező mező -->
                     <div class="mb-4">
                         <label for="valasz" class="form-label">Kötelező mező</label>
-                        <input type="text" name="valasz" id="valasz" class="form-control" placeholder="Válasz..." <?php echo true || isset($valasz) ? "required" : "readonly" ?> autofocus
+                        <input type="text" name="valasz" id="valasz" autocomplete="off" class="form-control" placeholder="Válasz..." <?php echo true || isset($valasz) ? "required" : "readonly" ?> autofocus
                             value="<?php echo htmlspecialchars($valasz ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
                         <div class="invalid-feedback">Ide írd a választ!</div>
                     </div>
 
                     <div class="mt-auto d-flex justify-content-end">
                         <button type="submit" class="btn btn-primary">
-                            <?php echo $_SESSION["state"] === "valasz"? 'Válasz' : 'Következő'  ?>
-                                
+                            <?php echo $_SESSION["state"] === "valasz" ? 'Válasz' : 'Következő' ?>
+
                         </button>
                     </div>
                 </form>
+                <?php
+                $ks = getKerdesekSzama($userId);
+                $hv = getHatralevokSzama($userId);
+                ?>
+                <input id="volume" type="range" min="0" max="<?php echo $ks; ?>" value="<?php echo $ks - $hv; ?>"
+                    step="1" readonly>
             </div>
+
         </div>
     </div>
 
@@ -164,6 +189,81 @@ switch ($_SESSION["state"]) {
             }, false);
         })();
     </script>
+
+    <?php if (isset($helyes)): ?>
+        <div id="movingObj" class="moving">
+            <?php if ($helyes === 1): ?>
+                <!-- helyes válasz esetén kép -->
+                <img src="unicorn.png" alt="helyes válasz">
+            <?php else: ?>
+                <!-- helytelen válasz esetén ikon -->
+                💩
+            <?php endif; ?>
+        </div>
+
+        <script>
+            const obj = document.getElementById('movingObj');
+            const w = window.innerWidth;
+            const h = window.innerHeight;
+
+            // indulási oldal: bal vagy jobb
+            const startSide = Math.random() < 0.5 ? "left" : "right";
+
+            let x, y, vx, vy;
+
+            // függőleges pattogás sebessége
+            vy = (Math.random() * 4 + 2) * (Math.random() < 0.5 ? 1 : -1);
+
+            // vízszintes sebesség: kb. 3 másodperc alatt érjen át
+            const travelTime = 4000; // ms
+            vx = w / travelTime * 16; // kb. képkockánkénti lépés (60fps ~16ms)
+            if (startSide === "right") vx *= -1;
+
+            // kezdőpozíció
+            if (startSide === "left") {
+                x = 0;
+            } else {
+                x = w - 180;
+            }
+            y = Math.random() * (h - 180);
+
+            if (startSide === "left") {
+                x = 0;
+                obj.style.transform = "scaleX(-1)"; // tükrözés balról induláskor
+            } else {
+                x = w - 180;
+                obj.style.transform = "scaleX(1)";
+            }
+
+            function animate() {
+              x += vx;
+  y += vy;
+
+  // függőleges pattogás
+  if (y <= 0 || y + 180 >= h) {
+    vy *= -1;
+  }
+
+  // vízszintes pattogás + tükrözés
+  if (x <= 0 || x + 180 >= w) {
+    vx *= -1;
+    if (vx > 0) {
+      obj.style.transform = "scaleX(-1)";
+    } else {
+      obj.style.transform = "scaleX(1)";
+    }
+  }
+
+  obj.style.left = x + "px";
+  obj.style.top = y + "px";
+
+  requestAnimationFrame(animate);
+            }
+            animate();
+        </script>
+    <?php endif; ?>
+
+
 </body>
 
 </html>

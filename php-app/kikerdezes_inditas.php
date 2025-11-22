@@ -12,12 +12,19 @@ $szotarok = getSzotarByUser($_SESSION['user']->UserId);
 
 $szotar_id = null;
 
+if (isset($_GET['korabbiLezaras']) && $_GET['korabbiLezaras'] == 'true') {
+    // Korábbi feladat lezárása
+    feladatLezarasa($_SESSION['user']->UserId);
+    header('Location: kikerdezes_inditas.php');
+    exit;
+}
+
 if (isset($_GET['szotar_id'])) {
     $szotar_id = $_GET['szotar_id'];
     $o = ['szotar' => $szotarok, 'szotar_id' => $szotar_id];
     /* TODO jogosultság ellenőrzés!
     $matches = array_filter($szotarok, function ($obj) use ($o) {
-        
+
         return $obj['szotar']['szotar_id'] === $obj['szotar_id'];
     });
 
@@ -28,11 +35,13 @@ if (isset($_GET['szotar_id'])) {
     }
         */
 }
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $selected_szotar_ids = isset($_POST['szotar_id']) ? $_POST['szotar_id'] : [];
     $tipus = isset($_POST['tipus']) ? $_POST['tipus'] : '1';
     $szoszam_tipus = isset($_POST['szoszam_tipus']) ? $_POST['szoszam_tipus'] : null;
-    $szam = isset($_POST['szam']) ? (int)$_POST['szam'] : null;
+    $szam = isset($_POST['szam']) ? (int) $_POST['szam'] : null;
 
     if (empty($selected_szotar_ids)) {
         $_SESSION['error'] = "Legalább egy szótárt ki kell választani.";
@@ -44,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         header('Location: kikerdezes_inditas.php');
         exit;
     }
-    
+
     if ($szoszam_tipus === null) {
         $_SESSION['error'] = "Kérlek, válassz mennyiséget!";
         header('Location: kikerdezes_inditas.php');
@@ -52,19 +61,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 
     $res = createFeladat($_SESSION['user']->UserId, $selected_szotar_ids, $tipus, $szoszam_tipus, $szam);
-    if ($res === false) {   
-        
+
+    if ($res === false) {
+
         $_SESSION['error'] = "Hiba történt a kikérdezés indításakor.";
         header('Location: kikerdezes_inditas.php');
         exit;
     } else {
         $_SESSION['info'] = "A kikérdezés sikeresen elindítva.";
-        header('Location: index.php');
+        header('Location: feladat.php');
         exit;
     }
 
-        
 
+
+} else if (hasAktivFeladat($_SESSION['user']->UserId)) {
+    $kerdes = true;
+    
 }
 ?><!DOCTYPE html>
 <html lang="hu">
@@ -86,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             unset($_SESSION['error']); ?>
         <?php endif; ?>
 
-        <form action="feladat.php" method="post" class="mt-4">
+        <form action="kikerdezes_inditas.php" method="post" class="mt-4">
             <fieldset>
                 <label for="szotar_id" class="form-label">Szótár(ak):</label>
                 <select id="szotar_id" name="szotar_id[]" class="form-select" multiple required>
@@ -113,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <fieldset>
                     <label class="form-label">Szavak száma:</label>
                     <label>
-                        <input type="radio" name="szoszam_tipus" value="M">Mindegyik</label>
+                        <input type="radio" name="szoszam_tipus" value="M" checked>Mindegyik</label>
                     </label>
                     <br>
                     <label>
@@ -128,6 +141,29 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         class="ms-2">&rarr;</span></button>
         </form>
 
+        <?php if (isset($kerdes) && $kerdes): ?>
+            <!-- Modal -->
+            <div class="modal fade" id="optionModal" tabindex="-1" aria-labelledby="optionModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="optionModalLabel">Már folyamatban van egy feladat</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Bezárás"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Folytatod a korábban elkezdett feladatot?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <!-- Gomb 1 -->
+                            <a href="feladat.php" class="btn btn-success">Igen</a>
+                            <!-- Gomb 2 -->
+                            <a href="kikerdezes_inditas.php?korabbiLezaras=true" class="btn btn-info">Nem, újat kezdek</a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
         <script>
             const radios = document.querySelectorAll('input[name="szoszam_tipus"]');
             const szammezo = document.getElementById('szammezo');
@@ -142,7 +178,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 });
             });
         </script>
+        <?php if (isset($kerdes) && $kerdes): ?>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+            <script>
+                // Automatikus megnyitás, ha a PHP változó engedélyezte
+                window.onload = function () {
+                    var myModal = new bootstrap.Modal(document.getElementById('optionModal'));
+                    myModal.show();
+                };
+            </script>
+        <?php endif; ?>
 
 </body>
 

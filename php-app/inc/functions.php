@@ -197,16 +197,65 @@ function createFeladat($userId, $szotarIds, $tipus, $szoszamTipus, $szam): bool
     }
 }
 
+function getHatralevokSzama($userId): int
+{
+    global $conn;
+    $stmt = $conn->prepare('
+        SELECT SUM(f.ismetles - sl.sikeres) as count FROM szolista sl
+        JOIN feladat f ON sl.feladat_fk = f.feladat_id
+        WHERE f.user_fk = ? AND f.end_at IS NULL AND sl.sikeres != f.ismetles');
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        return (int)$row['count'];
+    }
+    return 0;
+}
+
+function getKerdesekSzama($userId): int
+{
+    global $conn;
+    $stmt = $conn->prepare('
+        SELECT SUM(f.ismetles) as count FROM szolista sl
+        JOIN feladat f ON sl.feladat_fk = f.feladat_id
+        WHERE f.user_fk = ? AND f.end_at IS NULL AND sl.sikeres != f.ismetles');
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        return (int)$row['count'];
+    }
+    return 0;
+}
+
+function feladatLezarasa($userId): bool
+{
+    global $conn;
+    $stmt = $conn->prepare('
+        UPDATE feladat f SET end_at = IFNULL((SELECT MAX(end_at) FROM kerdes k WHERE k.feladat_fk = f.feladat_id), NOW()) WHERE f.user_fk = ? AND f.end_at IS NULL'
+    );
+    $stmt->bind_param("i", $userId);
+    return $stmt->execute();
+}
+
 function createKerdes($userId)
 {
     global $conn;
+    $hatraVan = getHatralevokSzama($userId);
+
+    if ($hatraVan <= 0) {
+        feladatLezarasa($userId);
+        return false;
+    }
+    
     $stmt = $conn->prepare(
-        "INSERT INTO kerdes(feladat_fk, szo_fk, nyelv_fk) SELECT f.feladat_id, s.szo_id, s.nyelv_fk FROM feladat f
+        "INSERT INTO kerdes(feladat_fk, szo_fk, nyelv_fk) (SELECT f.feladat_id, s.szo_id, s.nyelv_fk FROM feladat f
                 JOIN szolista sl ON sl.feladat_fk = f.feladat_id AND sl.sikeres != f.ismetles
                 JOIN szo s ON s.szo_id = sl.szo_fk AND s.nyelv_fk = sl.nyelv_fk
                 WHERE f.user_fk = ? AND f.end_at IS NULL
                 ORDER BY RAND()
-                LIMIT 1"
+                LIMIT 1)"
     );
     $stmt->bind_param("i", $userId);
     if ($stmt->execute()) {
@@ -214,7 +263,7 @@ function createKerdes($userId)
 
     }
 
-    return null;
+    return true;
 }
 
 function getKerdes($userId): array
@@ -292,4 +341,23 @@ function createValasz($userId, $valasz): array
     }
 
 
+}
+
+function getEredmenyek($userId): array
+{
+    global $conn;
+    $stmt = $conn->prepare("
+        SELECT *, TIME_TO_SEC(TIMEDIFF(end_at, start_at)) AS diff_seconds  FROM feladat f
+        JOIN (SELECT feladat_fk, SUM(sikeres) sSikeres, SUM(probalkozas) sProbalkozas FROM szolista sl GROUP BY sl.feladat_fk ) s ON s.feladat_fk = f.feladat_id
+        WHERE f.user_fk = ? ORDER BY f.start_at DESC"
+        
+    );
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $eredmenyek = [];
+    while ($row = $result->fetch_assoc()) {
+        $eredmenyek[] = $row;
+    }
+    return $eredmenyek;
 }
