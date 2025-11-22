@@ -361,3 +361,20 @@ function getEredmenyek($userId): array
     }
     return $eredmenyek;
 }
+
+function getUtolsoFeladat(int $userId): array  {
+    global $conn;
+    $stmt = $conn->prepare("
+        SELECT end_at FROM feladat f
+        WHERE f.user_fk = ? AND f.end_at IS NOT NULL ORDER BY f.end_at DESC LIMIT 1"
+        
+    );
+    $stmt->bind_param("i", $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        return $row;
+    }
+    return [];
+
+}

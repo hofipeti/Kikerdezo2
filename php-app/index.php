@@ -2,6 +2,7 @@
 require_once 'model/User.php';
 session_start();
 
+require_once 'inc/functions.php';
 
 
 
@@ -30,11 +31,43 @@ if (!isset($_SESSION['user'])) {
       unset($_SESSION['info']); ?>
     </div>
   <?php endif; ?>
+  <div>
+    <?php
+    $utolso = getUtolsoFeladat($_SESSION['user']->UserId);
+    if (!empty($utolso)) {
+     
+
+      // Átalakítjuk DateTime objektummá
+      $date = new DateTime($utolso["end_at"]);
+      $now = new DateTime();
+
+      // Különbség kiszámítása
+      $diff = $now->getTimestamp() - $date->getTimestamp();
+      echo "Örülök, hogy újra látlak! Utoljára <b>";
+      
+      if ($diff < 3600) {
+        // kevesebb mint 1 óra → percekben
+        $minutes = floor($diff / 60);
+        echo $minutes . " perce";
+      } elseif ($diff < 86400) {
+        // kevesebb mint 1 nap → órákban
+        $hours = floor($diff / 3600);
+        echo $hours . " órája";
+      } else {
+        // több mint 1 nap → napokban
+        $days = floor($diff / 86400);
+        echo $days . " napja";
+      }
+      echo " </b>végeztél feladatot.";
+    }
+    ?>
+  </div>
   <a href="uj_szotar.php" class="btn btn-primary mt-3">Új szótár hozzáadása</a>
   <a href="eredmeny.php" class="btn btn-primary mt-3">Eredmények</a>
   <a href="logout.php" class="btn btn-danger mt-3">Kijelentkezés</a>
 
   <div class="mt-4">
+    <h2>Szótáraid:</h2>
     <?php
     require_once __DIR__ . '/inc/config.php';
     require_once __DIR__ . '/inc/functions.php';
@@ -82,7 +115,7 @@ if (!isset($_SESSION['user'])) {
       opacity: 0;
     }
 
-   
+
     }
   </style>
   <script>
@@ -106,7 +139,7 @@ if (!isset($_SESSION['user'])) {
     });
 
 
- 
+
   </script>
 </body>
 
