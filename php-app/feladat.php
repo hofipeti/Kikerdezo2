@@ -35,6 +35,7 @@ switch ($_SESSION["state"]) {
         // Válasz kiértékelve, új kérdés kérése
         // Válasz feldolgozása
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
             $valasz = isset($_POST['valasz']) ? trim($_POST['valasz']) : '';
 
 
@@ -128,6 +129,34 @@ switch ($_SESSION["state"]) {
             height: 100%;
             object-fit: contain;
         }
+
+        /* Spinner stílus */
+        .spinner {
+            display: none;
+            width: 32px;
+            height: 32px;
+            border: 4px solid #ccc;
+            border-top: 4px solid #333;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+
+            /* form közepére helyezés */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+
+        @keyframes spin {
+            0% {
+                transform: translateY(-50%) rotate(0deg);
+            }
+
+            100% {
+                transform: translateY(-50%) rotate(360deg);
+            }
+        }
     </style>
 </head>
 
@@ -140,7 +169,7 @@ switch ($_SESSION["state"]) {
             } ?>">
                 <h1 class="h4 mb-4 text-center">Feladat megoldás</h1>
                 <?php echo $_SESSION["state"]; ?>
-                <form class="needs-validation mt-2" method="POST" action="feladat.php" novalidate>
+                <form class="needs-validation mt-2" method="POST" id="valaszForm" action="feladat.php" novalidate>
                     <!-- Readonly mező -->
                     <div class="mb-3">
                         <label for="readonlyInput" class="form-label">Kérdés:</label>
@@ -151,17 +180,20 @@ switch ($_SESSION["state"]) {
                     <!-- Kötelező mező -->
                     <div class="mb-4">
                         <label for="valasz" class="form-label">Kötelező mező</label>
-                        <input type="text" name="valasz" id="valasz" autocomplete="off" class="form-control" placeholder="Válasz..." <?php echo true || isset($valasz) ? "required" : "readonly" ?> autofocus
-                            value="<?php echo htmlspecialchars($valasz ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
+                        <input type="text" name="valasz" id="valasz" autocomplete="off" class="form-control"
+                            placeholder="Válasz..." <?php echo true || isset($valasz) ? "required" : "readonly" ?>
+                            autofocus value="<?php echo htmlspecialchars($valasz ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
                         <div class="invalid-feedback">Ide írd a választ!</div>
                     </div>
 
                     <div class="mt-auto d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" id="submitBtn" class="btn btn-primary">
                             <?php echo $_SESSION["state"] === "valasz" ? 'Válasz' : 'Következő' ?>
-
+                            
                         </button>
+
                     </div>
+                    <div class="spinner" id="spinner"></div>
                 </form>
                 <?php
                 $ks = getKerdesekSzama($userId);
@@ -236,33 +268,51 @@ switch ($_SESSION["state"]) {
             }
 
             function animate() {
-              x += vx;
-  y += vy;
+                x += vx;
+                y += vy;
 
-  // függőleges pattogás
-  if (y <= 0 || y + 180 >= h) {
-    vy *= -1;
-  }
+                // függőleges pattogás
+                if (y <= 0 || y + 180 >= h) {
+                    vy *= -1;
+                }
 
-  // vízszintes pattogás + tükrözés
-  if (x <= 0 || x + 180 >= w) {
-    vx *= -1;
-    if (vx > 0) {
-      obj.style.transform = "scaleX(-1)";
-    } else {
-      obj.style.transform = "scaleX(1)";
-    }
-  }
+                // vízszintes pattogás + tükrözés
+                if (x <= 0 || x + 180 >= w) {
+                    vx *= -1;
+                    if (vx > 0) {
+                        obj.style.transform = "scaleX(-1)";
+                    } else {
+                        obj.style.transform = "scaleX(1)";
+                    }
+                }
 
-  obj.style.left = x + "px";
-  obj.style.top = y + "px";
+                obj.style.left = x + "px";
+                obj.style.top = y + "px";
 
-  requestAnimationFrame(animate);
+                requestAnimationFrame(animate);
             }
             animate();
         </script>
     <?php endif; ?>
 
+
+    <script>
+
+        const form = document.getElementById('valaszForm');
+        const spinner = document.getElementById('spinner');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function (e) {
+            // Ha nem akarod, hogy azonnal elküldje, teszteléshez:
+            // e.preventDefault();
+
+            // Spinner megjelenítése
+            spinner.style.display = 'inline-block';
+
+            // Gomb letiltása, hogy ne lehessen újra kattintani
+            submitBtn.disabled = true;
+        });
+    </script>
 
 </body>
 

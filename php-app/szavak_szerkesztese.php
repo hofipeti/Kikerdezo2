@@ -22,6 +22,7 @@ if (!$szotar_id) {
         include_once $inc2;
 
     $szotar = getSzotarByID($szotar_id);
+
 }
 // Handle POST submission early, before sending any output
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'])) {
@@ -34,17 +35,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
         exit;
     } else
         if ($szo1_val !== '' && $szo2_val !== '') {
-            $res = createSzavak($szotar_id, $szo1_val, $szo2_val);
-            if ($res === false) {
-                // createSzavak sets $_SESSION['error'] on failure
+
+            if (isset($_SESSION["szo_id"])) {
+                $szo_id = base64_decode($_SESSION["szo_id"]);
+                $res = updateSzavak($szo_id, $szotar_id, $szo1_val, $szo2_val);
+                unset($_SESSION["szo_id"]);
+                if ($res === false) {
+                    // updateSzavak sets $_SESSION['error'] on failure
+                } else {
+                    $_SESSION['info'] = 'Szavak sikeresen frissítve.';
+                    header('Location: szavak_szerkesztese.php?szotar_id=' . (int) $szotar_id);
+                    exit;
+                }
+                return;
             } else {
-                $_SESSION['info'] = 'Szavak sikeresen mentve.';
-                header('Location: szavak_szerkesztese.php?szotar_id=' . (int) $szotar_id);
-                exit;
+
+                $res = createSzavak($szotar_id, $szo1_val, $szo2_val);
+                if ($res === false) {
+                    // createSzavak sets $_SESSION['error'] on failure
+                } else {
+                    $_SESSION['info'] = 'Szavak sikeresen mentve.';
+                    header('Location: szavak_szerkesztese.php?szotar_id=' . (int) $szotar_id);
+                    exit;
+                }
+
             }
         } else {
             $_SESSION['error'] = 'Mindkét szó megadása kötelező.';
         }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['szo_id'])) {
+    $_SESSION["szo_id"] = $_GET['szo_id'];
+    $szoList = getSzo(base64_decode(urldecode($_GET['szo_id'])));
+
 }
 
 ?>
@@ -56,48 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
     <title>Szavak szerkesztése</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        /* Egyszerű sorba rendezés: két mező egymás mellett */
-        .row {
-            display: flex;
-            gap: 16px;
-            align-items: flex-end;
-            flex-wrap: wrap;
-        }
-
-        .col {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-with-btn {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        label {
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        input[type="text"] {
-            padding: 8px;
-            min-width: 220px;
-        }
-
-        button {
-            padding: 8px 12px;
-        }
-
-        .error {
-            background: #ffe6e6;
-            color: #900;
-            padding: 10px;
-            border: 1px solid #f2c2c2;
-            margin-bottom: 12px;
-        }
-    </style>
+    <link rel="stylesheet" href="szavak_szerkesztese.css" />
 </head>
 
 <body>
@@ -126,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
             }
             ?>
         </h1>
-            <a href="index.php" class="btn btn-secondary mb-3">&larr; Vissza a főoldalra</a>
+        <a href="index.php" class="btn btn-secondary mb-3">&larr; Vissza a főoldalra</a>
         <!-- Két egymás melletti egysoros mező, felettük címke, mellettük gomb -->
         <form method="post" action="szavak_szerkesztese.php?szotar_id=<?php echo (int) $szotar_id; ?>">
             <div class="row">
@@ -134,7 +117,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
                     <label
                         for="szo1"><?php echo htmlspecialchars($szotar['nyelv1'] ?? 'Nyelv 1', ENT_QUOTES, 'UTF-8'); ?></label>
                     <div class="input-with-btn">
-                        <input type="text" id="szo1" name="szo1" class="form-control" value="">
+                        <input type="text" id="szo1" name="szo1" class="form-control" value="<?php
+                        if (isset($szoList)) {
+
+
+                            // Szűrés array_filter-rel, külső paraméter használatával
+                        
+                            $eredmeny = array_filter($szoList, function ($obj) use ($szotar) {
+
+                                return $obj["nyelv_fk"] == $szotar['nyelv1_id'];
+                            });
+
+                            echo htmlspecialchars(array_values($eredmeny)[0]["szo"] ?? '', ENT_QUOTES, 'UTF-8');
+                        }
+                        ?>">
                     </div>
                 </div>
 
@@ -142,10 +138,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
                     <label
                         for="szo2"><?php echo htmlspecialchars($szotar['nyelv2'] ?? 'Nyelv 2', ENT_QUOTES, 'UTF-8'); ?></label>
                     <div class="input-with-btn">
-                        <input type="text" id="szo2" name="szo2" class="form-control" value="">
+                        <input type="text" id="szo2" name="szo2" class="form-control" value="<?php
+                        if (isset($szoList)) {
+
+
+                            // Szűrés array_filter-rel, külső paraméter használatával
+                        
+                            $eredmeny = array_filter($szoList, function ($obj) use ($szotar) {
+
+                                return $obj["nyelv_fk"] == $szotar['nyelv2_id'];
+                            });
+
+                            echo htmlspecialchars(array_values($eredmeny)[0]["szo"] ?? '', ENT_QUOTES, 'UTF-8');
+                        }
+                        ?>">
                         <button type="submit" class="btn btn-primary">Mentés</button>
                     </div>
                 </div>
+
             </div>
         </form>
 
@@ -154,6 +164,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
         $szavak = [];
         if (function_exists('getSzavakBySzotar')) {
             $szavak = getSzavakBySzotar($szotar_id);
+
         }
 
         ?>
@@ -192,6 +203,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['szo1'], $_POST['szo2'
                             <tr>
                                 <td><?php echo htmlspecialchars($left ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo htmlspecialchars($right ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td>
+                                    <a href="szavak_szerkesztese.php?szotar_id=<?php echo (int) $szotar_id; ?>&szo_id=<?php echo base64_encode($row['szo_fk']); ?>"
+                                        class="btn btn-sm btn-warning">Szerkesztés</a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

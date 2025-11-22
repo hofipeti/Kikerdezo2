@@ -84,10 +84,25 @@ function getSzotarById($szotarId)
     return null;
 }
 
+function getSzo($szo_id) {
+    global $conn;
+    var_dump($szo_id);
+    $stmt = $conn->prepare("SELECT * FROM szo WHERE szo_id = ?");
+    $stmt->bind_param("s", $szo_id);
+
+    $stmt->execute();
+    
+    $result = $stmt->get_result();
+    $szavak = [];
+    while ($row = $result->fetch_assoc()) {
+        $szavak[] = $row;
+    }
+    return $szavak;
+}
 function getSzavakBySzotar($szotarId)
 {
     global $conn;
-    $stmt = $conn->prepare("SELECT s1.szo szo1, s2.szo szo2 FROM `szotar` s JOIN szotar_szo ss ON s.szotar_id = ss.szotar_fk JOIN szo s1 ON s1.szo_id = ss.szo_fk AND s1.nyelv_fk = s.nyelv1_fk JOIN szo s2 ON s2.szo_id = ss.szo_fk AND s2.nyelv_fk = s.nyelv2_fk WHERE s.szotar_id = ? ORDER BY ss.created_at DESC");
+    $stmt = $conn->prepare("SELECT s1.szo szo1, s2.szo szo2, ss.szo_fk FROM `szotar` s JOIN szotar_szo ss ON s.szotar_id = ss.szotar_fk JOIN szo s1 ON s1.szo_id = ss.szo_fk AND s1.nyelv_fk = s.nyelv1_fk JOIN szo s2 ON s2.szo_id = ss.szo_fk AND s2.nyelv_fk = s.nyelv2_fk WHERE s.szotar_id = ? ORDER BY ss.created_at DESC");
     $stmt->bind_param("i", $szotarId);
 
     $stmt->execute();
@@ -118,6 +133,20 @@ function createSzavak($szotarId, $szo1, $szo2)
     $stmt->execute();
 
 
+}
+
+function updateSzavak($szo_id,$szotarId, $szo1_val, $szo2_val) {
+    global $conn;
+    $stmt = $conn->prepare("UPDATE szo SET szo = ? WHERE szo_id = ? AND nyelv_fk = (SELECT s.nyelv1_fk FROM szotar s WHERE s.szotar_id = ?)");
+    $stmt->bind_param("ssi", $szo1_val, $szo_id, $szotarId);
+    $stmt->execute();   
+    $stmt->close();
+    
+    $stmt = $conn->prepare("UPDATE szo SET szo = ? WHERE szo_id = ? AND nyelv_fk = (SELECT s.nyelv2_fk FROM szotar s WHERE s.szotar_id = ?)");
+    $stmt->bind_param("ssi", $szo2_val, $szo_id, $szotarId);
+    $stmt->execute(); 
+    $stmt->close();
+    return true;
 }
 
 /**

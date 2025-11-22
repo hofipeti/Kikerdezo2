@@ -1,0 +1,40 @@
+  /* Egyszerű sorba rendezés: két mező egymás mellett */
+        .row {
+            display: flex;
+            gap: 16px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .col {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-with-btn {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        label {
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            min-width: 220px;
+        }
+
+        button {
+            padding: 8px 12px;
+        }
+
+        .error {
+            background: #ffe6e6;
+            color: #900;
+            padding: 10px;
+            border: 1px solid #f2c2c2;
+            margin-bottom: 12px;
+        }

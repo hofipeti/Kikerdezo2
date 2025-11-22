@@ -85,8 +85,8 @@ if (!isset($_SESSION['user'])) {
               <div class="text-muted small">ID: <?php echo (int) $szotar['szotar_id']; ?></div>
             </div>
             <div class="btn-group" role="group" aria-label="Actions">
-              <a href="szavak_szerkesztese.php?szotar_id=<?php echo (int) $szotar['szotar_id']; ?>"
-                class="btn btn-sm btn-outline-primary">Szavak szerkesztése</a>
+              <a  href="szavak_szerkesztese.php?szotar_id=<?php echo (int) $szotar['szotar_id']; ?>"
+                class="btn  btn-primary">Szavak szerkesztése</a>
               <a href="kikerdezes_inditas.php?szotar_id=<?php echo (int) $szotar['szotar_id']; ?>"
                 class="btn btn-sm btn-outline-primary fall-button">Indítás <span class="ms-2">&rarr;</span></a>
             </div>
