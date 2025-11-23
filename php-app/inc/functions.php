@@ -86,7 +86,7 @@ function getSzotarById($szotarId)
 
 function getSzo($szo_id) {
     global $conn;
-    var_dump($szo_id);
+    
     $stmt = $conn->prepare("SELECT * FROM szo WHERE szo_id = ?");
     $stmt->bind_param("s", $szo_id);
 
