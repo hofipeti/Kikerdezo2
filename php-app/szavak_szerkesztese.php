@@ -155,6 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['szo_id'])) {
                         <button type="submit" class="btn btn-primary">Mentés</button>
                     </div>
                 </div>
+                <div class="col"></div>
 
             </div>
         </form>
