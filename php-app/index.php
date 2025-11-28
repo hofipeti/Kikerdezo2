@@ -78,11 +78,12 @@ if (!isset($_SESSION['user'])) {
       <div class="alert alert-secondary">Nincsenek szótáraid.</div>
     <?php else: ?>
       <div class="list-group">
+        
         <?php foreach ($szotarok as $szotar): ?>
           <div class="list-group-item d-flex justify-content-between align-items-center">
             <div>
               <strong><?php echo htmlspecialchars($szotar['megnevezes'], ENT_QUOTES, 'UTF-8'); ?></strong>
-              <div class="text-muted small">ID: <?php echo (int) $szotar['szotar_id']; ?></div>
+              <div class="text-muted small">ID: <?php echo (int) $szotar['szotar_id'];?> | Szavak száma: <?php echo (int) $szotar['szoszam']; ?></div>
             </div>
             <div class="btn-group" role="group" aria-label="Actions">
               <a  href="szavak_szerkesztese.php?szotar_id=<?php echo (int) $szotar['szotar_id']; ?>"

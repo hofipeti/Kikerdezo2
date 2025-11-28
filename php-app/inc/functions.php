@@ -44,8 +44,14 @@ function createSzotar($userId, $szotarNev, $nyelvId1, $nyelvId2)
 function getSzotarByUser($userId)
 {
     global $conn;
-    $stmt = $conn->prepare("SELECT * FROM szotar WHERE user_fk = ? ORDER BY created_at DESC");
-    $stmt->bind_param("i", $userId);
+    $stmt = $conn->prepare("
+        SELECT * FROM szotar s
+        LEFT JOIN (
+    	    SELECT COUNT(*) szoszam, szotar_fk FROM szotar s
+    	    JOIN szotar_szo ss ON ss.szotar_fk = s.szotar_id AND s.user_fk = ? GROUP BY ss.szotar_fk 
+	    ) a ON a.szotar_fk = s.szotar_id
+        WHERE user_fk = ? ORDER BY created_at DESC");
+    $stmt->bind_param("ii", $userId, $userId);
 
     $stmt->execute();
     $result = $stmt->get_result();
@@ -334,7 +340,9 @@ function createValasz($userId, $valasz): array
         $result = $stmt->affected_rows;
         $stmt->close();
 
-        $stmt = $conn->prepare("SELECT helyes FROM kerdes WHERE kerdes_id = ?");
+        $stmt = $conn->prepare("
+            SELECT helyes, szo helyes_valasz FROM kerdes k JOIN szo s ON k.szo_fk = s.szo_id AND k.nyelv_fk != s.nyelv_fk WHERE kerdes_id = ?"
+        );
         $stmt->bind_param("i", $kerdesId);
         $stmt->execute();
         $res = $stmt->get_result();
@@ -361,7 +369,7 @@ function createValasz($userId, $valasz): array
         $stmt->close();
 
         $conn->commit();
-        return ['success' => true, 'helyes' => $helyes];
+        return ['success' => true, 'helyes' => $helyes, 'helyes_valasz' => $row['helyes_valasz']];
 
     } catch (Exception $e) {
         $conn->rollback();

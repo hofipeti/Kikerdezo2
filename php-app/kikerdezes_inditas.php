@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 } else if (hasAktivFeladat($_SESSION['user']->UserId)) {
     $kerdes = true;
-    
+
 }
 ?><!DOCTYPE html>
 <html lang="hu">
@@ -108,11 +108,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     foreach ($szotarok as $szotar):
                         ?>
                         <option value="<?php echo (int) $szotar['szotar_id']; ?>" <?php if ($szotar['szotar_id'] == $szotar_id)
-                                echo 'selected'; ?>>
+                                echo 'selected'; ?>
+                            szoszam="<?php echo (int) $szotar['szoszam']; ?>">
                             <?php echo htmlspecialchars($szotar['megnevezes'], ENT_QUOTES, 'UTF-8'); ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
+
+                <fieldset class="mt-3">
+                    <label for="kijelolt_szavak_szama" class="form-label">Szavak száma:</label>
+                    <input type="number" id="kijelolt_szavak_szama" name="szam" class="form-control" value="0"
+                        readonly />
+                </fieldset>
                 <fieldset>
 
                     <div class="mb-3">
@@ -177,6 +184,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                 });
             });
+
+            const select = document.getElementById("szotar_id");
+            const output = document.getElementById("kijelolt_szavak_szama");
+
+            function updateSum() {
+                let sum = 0;
+                for (let option of select.selectedOptions) {
+                    sum += parseInt(option.getAttribute("szoszam"), 10);
+                }
+                output.value = sum;
+            }
+
+            // változáskor fut
+            select.addEventListener("change", updateSum);
+
+            // betöltéskor is fut
+            document.addEventListener("DOMContentLoaded", updateSum);
+
         </script>
         <?php if (isset($kerdes) && $kerdes): ?>
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>

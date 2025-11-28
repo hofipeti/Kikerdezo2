@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['szo_id'])) {
                     <label
                         for="szo1"><?php echo htmlspecialchars($szotar['nyelv1'] ?? 'Nyelv 1', ENT_QUOTES, 'UTF-8'); ?></label>
                     <div class="input-with-btn">
-                        <input type="text" id="szo1" name="szo1" class="form-control" value="<?php
+                        <input autofocus type="text" id="szo1" name="szo1" class="form-control" value="<?php
                         if (isset($szoList)) {
 
 

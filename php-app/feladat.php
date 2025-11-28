@@ -52,6 +52,7 @@ switch ($_SESSION["state"]) {
             if ($result["success"]) {
                 $_SESSION["success"] = true;
                 $_SESSION["helyes"] = $result['helyes'];
+                $_SESSION["helyes_valasz"] = $result['helyes_valasz'];
                 $_SESSION["state"] = "eredmeny";
                 header("Location: feladat.php");
                 exit;
@@ -168,7 +169,7 @@ switch ($_SESSION["state"]) {
                 echo $helyes === 1 ? 'helyes' : 'helytelen';
             } ?>">
                 <h1 class="h4 mb-4 text-center">Feladat megoldás</h1>
-                <?php echo $_SESSION["state"]; ?>
+
                 <form class="needs-validation mt-2" method="POST" id="valaszForm" action="feladat.php" novalidate>
                     <!-- Readonly mező -->
                     <div class="mb-3">
@@ -179,7 +180,7 @@ switch ($_SESSION["state"]) {
 
                     <!-- Kötelező mező -->
                     <div class="mb-4">
-                        <label for="valasz" class="form-label">Kötelező mező</label>
+                        <label for="valasz" class="form-label">Válaszod</label>
                         <input type="text" name="valasz" id="valasz" autocomplete="off" class="form-control"
                             placeholder="Válasz..." <?php echo true || isset($valasz) ? "required" : "readonly" ?>
                             autofocus value="<?php echo htmlspecialchars($valasz ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
@@ -189,10 +190,11 @@ switch ($_SESSION["state"]) {
                     <div class="mt-auto d-flex justify-content-end">
                         <button type="submit" id="submitBtn" class="btn btn-primary">
                             <?php echo $_SESSION["state"] === "valasz" ? 'Válasz' : 'Következő' ?>
-                            
+
                         </button>
 
                     </div>
+
                     <div class="spinner" id="spinner"></div>
                 </form>
                 <?php
@@ -201,6 +203,13 @@ switch ($_SESSION["state"]) {
                 ?>
                 <input id="volume" type="range" min="0" max="<?php echo $ks; ?>" value="<?php echo $ks - $hv; ?>"
                     step="1" readonly>
+                <?php if (isset($helyes) && $helyes != 1): ?>
+                    <div class="mb-4" style="text-align: center; font-size: 1.2em; margin-top: 20px;">
+                        Helyes válasz: <b style="color: white;">
+                            <?php echo htmlspecialchars($_SESSION['helyes_valasz'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
+                        </b>
+                    </div>
+                <?php endif; ?>
             </div>
 
         </div>
@@ -301,7 +310,10 @@ switch ($_SESSION["state"]) {
         const form = document.getElementById('valaszForm');
         const spinner = document.getElementById('spinner');
         const submitBtn = document.getElementById('submitBtn');
-
+        if (!form.checkValidity()) {
+            // Ha invalid, ne jelenjen meg a spinner
+            return;
+        }
         form.addEventListener('submit', function (e) {
             // Ha nem akarod, hogy azonnal elküldje, teszteléshez:
             // e.preventDefault();
