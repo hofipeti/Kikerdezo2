@@ -241,10 +241,24 @@ switch ($_SESSION["state"]) {
     </script>
 
     <?php if (isset($helyes)): ?>
+
+        <?php
+$helyesKepek = [
+    "unicorn.png",
+    "unic02.png",
+    "unic03.png",
+    "unic04.png",
+    "unic05.png",
+    "unic06.png"
+];
+
+
+?>
+
         <div id="movingObj" class="moving">
             <?php if ($helyes === 1): ?>
                 <!-- helyes válasz esetén kép -->
-                <img src="unicorn.png" alt="helyes válasz">
+                <img src="<?php echo 'assets/'.$helyesKepek[array_rand($helyesKepek)]; ?>" alt="helyes válasz">
             <?php else: ?>
                 <!-- helytelen válasz esetén ikon -->
                 💩
