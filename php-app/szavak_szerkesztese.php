@@ -178,12 +178,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['szo_id'])) {
                 <table class="table table-bordered">
                     <thead>
                         <tr>
+                            <th>#</th>
                             <th><?php echo htmlspecialchars($szotar['nyelv1'] ?? 'Nyelv 1', ENT_QUOTES, 'UTF-8'); ?></th>
                             <th><?php echo htmlspecialchars($szotar['nyelv2'] ?? 'Nyelv 2', ENT_QUOTES, 'UTF-8'); ?></th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($szavak as $row):
+                        <?php foreach ($szavak as $index => $row):
                             // Heuristics to find left/right word values in returned row
                             $left = $row['szo1'] ?? $row['s1_szo'] ?? $row['s1'] ?? $row['szo_left'] ?? $row['szo'] ?? null;
                             $right = $row['szo2'] ?? $row['s2_szo'] ?? $row['s2'] ?? $row['szo_right'] ?? null;
@@ -202,6 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['szo_id'])) {
                             }
                             ?>
                             <tr>
+                                <td><?php  echo count($szavak) - $index."." ;?></td>
                                 <td><?php echo htmlspecialchars($left ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo htmlspecialchars($right ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td>
