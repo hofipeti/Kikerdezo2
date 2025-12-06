@@ -181,7 +181,7 @@ switch ($_SESSION["state"]) {
                     <!-- Kötelező mező -->
                     <div class="mb-4">
                         <label for="valasz" class="form-label">Válaszod</label>
-                        <input type="text" name="valasz" id="valasz" autocomplete="off" class="form-control"
+                        <input type="text" name="valasz" id="valasz" autocomplete="off" spellcheck="false" class="form-control"
                             placeholder="Válasz..." <?php echo true || isset($valasz) ? "required" : "readonly" ?>
                             autofocus value="<?php echo htmlspecialchars($valasz ?? '', ENT_QUOTES, 'UTF-8'); ?>" />
                         <div class="invalid-feedback">Ide írd a választ!</div>
@@ -201,8 +201,17 @@ switch ($_SESSION["state"]) {
                 $ks = getKerdesekSzama($userId);
                 $hv = getHatralevokSzama($userId);
                 ?>
-                <input id="volume" type="range" min="0" max="<?php echo $ks; ?>" value="<?php echo $ks - $hv; ?>"
-                    step="1" readonly>
+                <!-- input id="volume" type="range" min="0" max="<?php echo $ks; ?>" value="<?php echo $ks - $hv; ?>"
+                    step="1" readonly -->
+                    
+                <div class="mb-4">
+                    <progress id="haladas" max="<?php echo $ks; ?>" value="<?php echo $ks - $hv; ?>" style="width:100%" />
+                    
+                </div>
+                <div class="mb-4" style="text-align: right;">
+                    <?php echo $ks; ?> / <?php echo $ks - $hv; ?>
+                </div>
+
                 <?php if (isset($helyes) && $helyes != 1): ?>
                     <div class="mb-4" style="text-align: center; font-size: 1.2em; margin-top: 20px;">
                         Helyes válasz: <b style="color: white;">

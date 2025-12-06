@@ -254,7 +254,7 @@ function getKerdesekSzama($userId): int
     $stmt = $conn->prepare('
         SELECT SUM(f.ismetles) as count FROM szolista sl
         JOIN feladat f ON sl.feladat_fk = f.feladat_id
-        WHERE f.user_fk = ? AND f.end_at IS NULL AND sl.sikeres != f.ismetles');
+        WHERE f.user_fk = ? AND f.end_at IS NULL');
     $stmt->bind_param("i", $userId);
     $stmt->execute();
     $result = $stmt->get_result();

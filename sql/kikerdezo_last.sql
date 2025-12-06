@@ -102,7 +102,8 @@ INSERT INTO `nyelv` (`nyelv_id`, `kod`, `megnevezes`) VALUES
 CREATE TABLE `szo` (
   `szo_id` binary(16) NOT NULL,
   `szo` text CHARACTER SET utf8mb3 COLLATE utf8mb3_hungarian_ci NOT NULL,
-  `nyelv_fk` int NOT NULL
+  `nyelv_fk` int NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_hungarian_ci;
 
 --
